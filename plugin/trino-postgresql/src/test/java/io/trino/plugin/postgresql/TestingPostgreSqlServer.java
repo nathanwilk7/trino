@@ -18,6 +18,7 @@ import io.trino.plugin.jdbc.RemoteDatabaseEvent;
 import io.trino.testing.ResourcePresence;
 import org.intellij.lang.annotations.Language;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 import java.io.Closeable;
 import java.sql.Connection;
@@ -65,7 +66,8 @@ public class TestingPostgreSqlServer
     public TestingPostgreSqlServer(boolean shouldExposeFixedPorts)
     {
         // Use the oldest supported PostgreSQL version
-        dockerContainer = new PostgreSQLContainer<>("postgres:11")
+        DockerImageName vectorImage = DockerImageName.parse("ankane/pgvector") .asCompatibleSubstituteFor("postgres");
+        dockerContainer = new PostgreSQLContainer<>(vectorImage)
                 .withStartupAttempts(3)
                 .withDatabaseName(DATABASE)
                 .withUsername(USER)

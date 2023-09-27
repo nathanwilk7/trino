@@ -167,6 +167,7 @@ public class TestPostgreSqlTypeMapping
 
         JdbcSqlExecutor executor = new JdbcSqlExecutor(postgreSqlServer.getJdbcUrl(), postgreSqlServer.getProperties());
         executor.execute("CREATE EXTENSION hstore WITH SCHEMA public");
+        executor.execute("CREATE EXTENSION vector WITH SCHEMA public");
     }
 
     @Test
@@ -841,6 +842,22 @@ public class TestPostgreSqlTypeMapping
                 .execute(getQueryRunner(), session, trinoCreateAndInsert(session, "test_array_parameterized_varchar_unicode"));
         arrayVarcharUnicodeDataTypeTest(TestPostgreSqlTypeMapping::postgreSqlArrayFactory)
                 .execute(getQueryRunner(), session, postgresCreateAndInsert("test_array_parameterized_varchar_unicode"));
+    }
+
+    @Test
+    public void testEmbedding()
+    {
+        Session session = sessionWithArrayAsArray();
+
+// errors with java.lang.RuntimeException: Error executing sql: CREATE TABLE test_array_basicooi5iyy2u1 AS SELECT CAST('[1,2,3]' AS vector(3)) col_0
+// TODO is there some other way to get this setup? (eg run the sql manually for now), since I want to test out the conversion to a real[] type
+
+        SqlDataTypeTest.create()
+                .addRoundTrip("vector(3)", "'[1,2,3]'", new ArrayType(REAL), "[1.0,2.0,3.0]")
+                .execute(getQueryRunner(), session, trinoCreateAsSelect(session, "test_array_basic"))
+                .execute(getQueryRunner(), session, trinoCreateAndInsert(session, "test_array_basic"));
+
+//        testUnsupportedDataTypeConvertedToVarchar(session, "vector(3)", "_vector", "ARRAY['binary value'::bytea]", "'{\"\\\\x62696e6172792076616c7565\"}'");
     }
 
     @Test
